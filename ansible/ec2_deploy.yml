@@ -12,7 +12,7 @@
         key_name: test
         vpc_subnet_id: subnet-00d0d44cdf925df2c
         tags:
-          name: Eshop 1
+          name: myEshop
         count: 1
         network:
           assign_public_ip: yes
@@ -80,3 +80,24 @@
       wait_for:
         port: 
           80
+
+    - name: Find instances by tags
+      ec2_instance_info:
+        region: us-east-1
+        filters:
+          "tag:name": "myEshop"
+          instance-state-name: ["running", "pending", "stopping", "stopped"]
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        security_token: "{{ session_token }}"
+      register: existing_instances
+
+- name: Kill old instances
+  ec2_instance:
+    state: absent
+    instance_ids: "{{ existing_instances.instances | map(attribute='instance_id') | reject('equalto', ec2_instance_result.instances[0].instance_id) | list }}"
+    region: us-east-1
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    security_token: "{{ session_token }}"
+  when: existing_instances.instances | length > 0
