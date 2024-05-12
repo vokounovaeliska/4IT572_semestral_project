@@ -5,6 +5,7 @@
   tasks:
     - name: Launch EC2 Instance
       ec2_instance: 
+       name: "eshop - semestral work"
         instance_type: t3.medium
         image_id: ami-051f8a213df8bc089
         region: us-east-1
@@ -14,7 +15,7 @@
           name: Eshop 1
         count: 1
         network:
-          assign_public_id: yes
+          assign_public_ip: yes
         wait: yes
         security_group: eshop
         network:
