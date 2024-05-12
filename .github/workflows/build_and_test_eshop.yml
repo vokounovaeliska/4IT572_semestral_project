@@ -110,28 +110,12 @@ jobs:
       - run: |
           source /opt/pipx/venvs/ansible-core/bin/activate
           python -m pip install boto3 botocore        
-      # - name: Run Ansible playbook    
-      #   uses: dawidd6/action-ansible-playbook@v2.8.0
-      #   with:
-      #     playbook: ec2_deploy.yml
-      #     directory: ./ansible
-      #     key: ${{ secrets.AWS_SSH_KEY }}
-      #     options: |
-      #       --user ec2-user
-      #       --extra-vars "access_key=${{ secrets.AWS_ACCESS_KEY }} secret_key=${{ secrets.AWS_SECRET_KEY }} session_token=${{ secrets.AWS_SESSION_TOKEN }}"
-
-      - name: Set permissions for AWS SSH key
-        run: |
-          echo "$AWS_SSH_KEY" > test.pem
-          chmod 400 test.pem
-        env:
-          AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
-      - name: Run Ansible playbook
+      - name: Run Ansible playbook    
         uses: dawidd6/action-ansible-playbook@v2.8.0
         with:
-            playbook: ec2_deploy.yml
-            directory: ./ansible
-            key: ./test.pem
-            options: |
-                --user ec2-user
-                --extra-vars "access_key=${{ secrets.AWS_ACCESS_KEY }} secret_key=${{ secrets.AWS_SECRET_KEY }} session_token=${{ secrets.AWS_SESSION_TOKEN }}"
+          playbook: ec2_deploy.yml
+          directory: ./ansible
+          key: ${{ secrets.SECRET_SSH_KEY }}
+          options: |
+            --extra-vars "access_key=${{ secrets.AWS_ACCESS_KEY }} secret_key=${{ secrets.AWS_SECRET_KEY }} session_token=${{ secrets.AWS_SESSION_TOKEN }} user=ec2-user"
+            --user ec2-user
