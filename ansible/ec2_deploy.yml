@@ -6,8 +6,8 @@
     - name: Launch EC2 Instance
       ec2_instance: 
         name: "eshop - semestral work"
-        instance_type: t3.medium
-        image_id: ami-051f8a213df8bc089
+        instance_type: t2.micro
+        image_id: ami-07caf09b362be10b8
         region: us-east-1
         key_name: test
         vpc_subnet_id: subnet-00d0d44cdf925df2c
