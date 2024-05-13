@@ -28,13 +28,15 @@
         hostname: "{{ item.public_ip_address }}"
         groupname: launched
       loop: "{{ ec2_instance_result.instances }}"
+      when: item.public_ip_address is defined and item.public_ip_address | length > 0
 
     - name: Wait for SSH connection
-      delegate_to: "{{ item.public_dns_name }}"
       wait_for_connection:
         delay: 30
         timeout: 300
+      delegate_to: "{{ item.public_dns_name }}"
       loop: "{{ ec2_instance_result.instances }}"
+      when: item.public_dns_name is defined and item.public_dns_name | length > 0
 
 - name: Configure EC2 Instances
   hosts: launched
