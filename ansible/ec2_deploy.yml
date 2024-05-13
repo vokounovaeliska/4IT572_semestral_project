@@ -80,35 +80,27 @@
       wait_for:
         port: 80
 
-    - name: Install Python pip
-      ansible.builtin.package:
-        name: python3-pip
-        state: present
-
-    - name: Install boto3 and botocore
-      ansible.builtin.pip:
-        name:
-          - boto3
-          - botocore
-        state: present
-
-    - name: Find instances by tags
-      ec2_instance_info:
-        region: us-east-1
-        filters:
-          "tag:name": "myEshop"
-          instance-state-name: ["running", "pending", "stopping", "stopped"]
-        aws_access_key: "{{ access_key }}"
-        aws_secret_key: "{{ secret_key }}"
-        security_token: "{{ session_token }}"
+    - name: Find instances by tag
+      shell: >
+        aws ec2 describe-instances
+        --region us-east-1
+        --filters "Name=tag:name,Values=myEshop" "Name=instance-state-name,Values=running,pending,stopping,stopped"
+        --query "Reservations[*].Instances[*].InstanceId"
+        --output text
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
+        AWS_SESSION_TOKEN: "{{ session_token }}"
       register: existing_instances
 
     - name: Kill old instances
-      ec2_instance:
-        state: absent
-        instance_ids: "{{ existing_instances.instances | map(attribute='instance_id') | reject('equalto', ec2_instance_result.instances[0].instance_id) | list }}"
-        region: us-east-1
-        aws_access_key: "{{ access_key }}"
-        aws_secret_key: "{{ secret_key }}"
-        security_token: "{{ session_token }}"
-      when: existing_instances.instances | length > 0
+      shell: >
+        aws ec2 terminate-instances
+        --instance-ids {{ existing_instances.stdout_lines | join(' ') }}
+        --region us-east-1
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
+        AWS_SESSION_TOKEN: "{{ session_token }}"
+      when: existing_instances.stdout_lines | length > 0
+
