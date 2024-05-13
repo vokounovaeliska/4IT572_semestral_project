@@ -1,8 +1,6 @@
 - name: deploy to EC2
   hosts: localhost
   connection: local
-  vars:
-    exact_count: 1 
 
   tasks:
     - name: Launch EC2 Instance
