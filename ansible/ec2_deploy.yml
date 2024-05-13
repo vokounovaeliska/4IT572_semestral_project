@@ -88,19 +88,18 @@
         --query "Reservations[*].Instances[*].InstanceId"
         --output text
       environment:
-        AWS_ACCESS_KEY_ID: "{{ access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
-        AWS_SESSION_TOKEN: "{{ session_token }}"
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        security_token: "{{ session_token }}"
       register: existing_instances
 
     - name: Kill old instances
-      shell: >
-        aws ec2 terminate-instances
-        --instance-ids {{ existing_instances.stdout_lines | join(' ') }}
-        --region us-east-1
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
-        AWS_SESSION_TOKEN: "{{ session_token }}"
-      when: existing_instances.stdout_lines | length > 0
+      ec2_instance:
+        state: absent
+        instance_ids: "{{ existing_instances.instances | map(attribute='instance_id') | reject('equalto', ec2_instance_result.instances[0].instance_id) | list }}"
+        region: us-east-1
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        security_token: "{{ session_token }}"
+      when: existing_instances.instances | length > 0
 
