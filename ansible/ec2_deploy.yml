@@ -62,10 +62,10 @@
         dest: ./app
 
     - name: Build Eshop Docker image
-      shell: cd app && docker build -t myEshop:latest .
+      shell: cd app && docker build -t myeshop:latest .
       become: yes
     - name: Run Docker with eshop
-      shell: docker run -p 80:3000 myEshop
+      shell: docker run -p 80:3000 myeshop
       async: 45
       poll: 0
       become: yes
