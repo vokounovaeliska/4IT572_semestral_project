@@ -4,7 +4,7 @@
 
   tasks:
     - name: Launch EC2 Instance
-      ec2_instance: 
+      ec2_instance:
         name: "eshop - semestral work"
         instance_type: t3.medium
         image_id: ami-07caf09b362be10b8
@@ -15,7 +15,7 @@
           name: myEshop
         count: 1
         network:
-            assign_public_ip: yes
+          assign_public_ip: yes
         wait: yes
         security_group: eshop
         aws_access_key: "{{ access_key }}"
@@ -58,7 +58,7 @@
 
     - name: Fetch eshop from git
       git:
-        repo: 'https://github.com/vokounovaeliska/4IT572_semestral_project.git'
+        repo: "https://github.com/vokounovaeliska/4IT572_semestral_project.git"
         dest: ./app
 
     - name: Build Eshop Docker image
@@ -90,6 +90,6 @@
         secret_key: "{{ secret_key }}"
         session_token: "{{ session_token }}"
         filters:
-          "tag:Name": "myEshop"
+          "tag:name": "myEshop"
         exact_count: 1
         wait: yes
