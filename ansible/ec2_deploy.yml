@@ -66,9 +66,21 @@
       become: yes
     - name: Run Docker with eshop
       shell: docker run -p 80:3000 myeshop
-      async: 45
-      poll: 0
       become: yes
     - wait_for:
         port:
           80
+
+- name: Limit the instances count
+  hosts: localhost
+  tasks:
+    - name: Limit to exact count
+      amazon.aws.ec2_instance:
+        region: us-east-1
+        access_key: "{{ access_key }}"
+        secret_key: "{{ secret_key }}"
+        session_token: "{{ session_token }}"
+        filters:
+          "tag:Name": "myEshop"
+        exact_count: 1
+        wait: yes
