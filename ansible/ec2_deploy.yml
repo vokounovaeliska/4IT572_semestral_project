@@ -90,6 +90,6 @@
         secret_key: "{{ secret_key }}"
         session_token: "{{ session_token }}"
         filters:
-          "tag:Name": "myEshop"
+          "tag:name": "myEshop"
         exact_count: 1
         wait: yes
