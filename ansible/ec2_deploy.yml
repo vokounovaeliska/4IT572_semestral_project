@@ -23,10 +23,6 @@
         security_token: "{{ session_token }}"
       register: ec2_instance_result
 
-    - name: Debug instance data
-      debug:
-        var: ec2_instance_result.instances
-
     - name: Add instance host to group
       add_host:
         hostname: "{{ item.public_ip_address | default('default_hostname') }}"
@@ -35,11 +31,12 @@
       when: item.public_ip_address is defined
 
     - name: Wait for SSH connection
-      delegate_to: "{{ item.public_dns_name }}"
       wait_for_connection:
-        delay: 30
+        delay: 10
         timeout: 300
+      delegate_to: "{{ item.public_dns_name }}"
       loop: "{{ ec2_instance_result.instances }}"
+      when: item.public_dns_name is defined
 
 - name: Configure EC2 Instances
   hosts: launched
