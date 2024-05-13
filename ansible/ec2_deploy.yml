@@ -25,18 +25,16 @@
 
     - name: Add instance host to group
       add_host:
-        hostname: "{{ item.public_ip_address | default('default_hostname') }}"
+        hostname: "{{ item.public_ip_address }}"
         groupname: launched
       loop: "{{ ec2_instance_result.instances }}"
-      when: item.public_ip_address is defined
 
     - name: Wait for SSH connection
-      wait_for_connection:
-        delay: 10
-        timeout: 300
       delegate_to: "{{ item.public_dns_name }}"
+      wait_for_connection:
+        delay: 30
+        timeout: 300
       loop: "{{ ec2_instance_result.instances }}"
-      when: item.public_dns_name is defined
 
 - name: Configure EC2 Instances
   hosts: launched
@@ -60,7 +58,7 @@
 
     - name: Fetch eshop from git
       git:
-        repo: "https://github.com/vokounovaeliska/4IT572_semestral_project.git"
+        repo: 'https://github.com/vokounovaeliska/4IT572_semestral_project.git'
         dest: ./app
 
     - name: Build Eshop Docker image
@@ -80,7 +78,8 @@
 
     - name: Wait for eshop to run
       wait_for:
-        port: 80
+        port: 
+          80
 
 - name: Limit to only one instances
   hosts: localhost
