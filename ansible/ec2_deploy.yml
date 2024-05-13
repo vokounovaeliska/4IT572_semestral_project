@@ -25,10 +25,10 @@
 
     - name: Add instance host to group
       add_host:
-        hostname: "{{ item.public_ip_address }}"
+        hostname: "{{ item.public_ip }}"
         groupname: launched
       loop: "{{ ec2_instance_result.instances }}"
-      when: item.public_ip_address is defined and item.public_ip_address | length > 0
+      when: item.public_ip is defined and item.public_ip | length > 0
 
     - name: Wait for SSH connection
       wait_for_connection:
