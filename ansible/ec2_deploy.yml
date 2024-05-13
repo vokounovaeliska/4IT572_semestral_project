@@ -73,19 +73,16 @@
         port:
           80
 
-    - name: Get instance details
-      amazon.aws.ec2_instance_info:
-        filters:
-          "tag:Name": "myEshop"
-        region: us-east-1
-      register: ec2_info
-
-    - name: Sort by oldest instances
-      set_fact:
-        instances_to_terminate: "{{ ec2_info.instances | sort(attribute='launch_time') | map(attribute='id') | list }}"
-
-    - name: Terminate instances
-      amazon.aws.ec2_instance:
-        state: absent
-        instance_ids: "{{ instances_to_terminate[:-(exact_count|int)] }}"
-      when: instances_to_terminate | length > exact_count|int
+    - name: Only one instance
+      hosts: localhost
+      tasks:
+        - name: Limit to exact count
+          amazon.aws.ec2_instance:
+            region: us-east-1
+            access_key: "{{ access_key }}"
+            secret_key: "{{ secret_key }}"
+            session_token: "{{ session_token }}"
+            filters:
+              "tag:Name": "myEshop"
+            exact_count: 1
+            wait: yes
