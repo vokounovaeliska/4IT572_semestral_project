@@ -80,12 +80,18 @@
       wait_for:
         port: 80
 
-    - name: Find instances by tag
+    - name: Get current instance ID
+      uri:
+        url: http://169.254.169.254/latest/meta-data/instance-id
+        return_content: yes
+      register: current_instance
+
+    - name: Find instances by tag excluding the current one
       shell: >
         aws ec2 describe-instances
         --region us-east-1
         --filters "Name=tag:name,Values=myEshop" "Name=instance-state-name,Values=running,pending,stopping,stopped"
-        --query "Reservations[*].Instances[*].InstanceId"
+        --query "Reservations[*].Instances[?InstanceId!='{{ current_instance.content }}'].InstanceId"
         --output text
       environment:
         AWS_ACCESS_KEY_ID: "{{ access_key }}"
@@ -103,4 +109,5 @@
         AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
         AWS_SESSION_TOKEN: "{{ session_token }}"
       when: existing_instances.stdout_lines | length > 0
+
 
