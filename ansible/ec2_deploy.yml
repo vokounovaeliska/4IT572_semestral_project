@@ -62,23 +62,16 @@
         dest: ./app
 
     - name: Build Eshop Docker image
-      docker_image:
-        build:
-          path: ./app
-        name: eshop
-        tag: latest
-        source: build
-    - name: Run Eshop docker
-      docker_container:
-        name: eshop
-        image: eshop
-        state: started
-        ports:
-          - "80:3000"
-
-    - name: Wait for eshop to run
-      wait_for:
-        port: 80
+      shell: cd app && docker build -t myEshop:latest .
+      become: yes
+    - name: Run Docker with eshop
+      shell: docker run -p 80:3000 myEshop
+      async: 45
+      poll: 0
+      become: yes
+    - wait_for:
+        port:
+          80
 
     - name: Get current instance ID
       uri:
