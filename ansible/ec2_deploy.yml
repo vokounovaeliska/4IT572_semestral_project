@@ -1,6 +1,8 @@
 - name: deploy to EC2
   hosts: localhost
   connection: local
+  vars:
+    exact_count: 1 
 
   tasks:
     - name: Launch EC2 Instance
@@ -73,34 +75,19 @@
         port:
           80
 
-    - name: Get current instance ID
-      uri:
-        url: http://169.254.169.254/latest/meta-data/instance-id
-        return_content: yes
-      register: current_instance
+    - name: Get instance details
+      amazon.aws.ec2_instance_info:
+        filters:
+          "tag:Name": "myEshop"
+        region: us-east-1
+      register: ec2_info
 
-    - name: Find instances by tag excluding the current one
-      shell: >
-        aws ec2 describe-instances
-        --region us-east-1
-        --filters "Name=tag:name,Values=myEshop" "Name=instance-state-name,Values=running,pending,stopping,stopped"
-        --query "Reservations[*].Instances[?InstanceId!='{{ current_instance.content }}'].InstanceId"
-        --output text
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
-        AWS_SESSION_TOKEN: "{{ session_token }}"
-      register: existing_instances
+    - name: Sort by oldest instances
+      set_fact:
+        instances_to_terminate: "{{ ec2_info.instances | sort(attribute='launch_time') | map(attribute='id') | list }}"
 
-    - name: Kill old instances
-      shell: >
-        aws ec2 terminate-instances
-        --instance-ids {{ existing_instances.stdout_lines | join(' ') }}
-        --region us-east-1
-      environment:
-        AWS_ACCESS_KEY_ID: "{{ access_key }}"
-        AWS_SECRET_ACCESS_KEY: "{{ secret_key }}"
-        AWS_SESSION_TOKEN: "{{ session_token }}"
-      when: existing_instances.stdout_lines | length > 0
-
-
+    - name: Terminate instances
+      amazon.aws.ec2_instance:
+        state: absent
+        instance_ids: "{{ instances_to_terminate[:-(exact_count|int)] }}"
+      when: instances_to_terminate | length > exact_count|int
